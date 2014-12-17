@@ -1,14 +1,3 @@
-/MainWindow.class
-/sortPanel.class
-/MainWindow$PauseMouse.class
-/MainWindow$buttonListener.class
-/MainWindow$ButtonListener.class
-/sortPanel$1.class
-/test1.class
-/test2.class
-/SortingAlgorithms.class
-/SortPanel.class
-/SelectionSortThread.class
-/SortThread.class
-/MainWindow$SelectionSortThread.class
-/Colors.class
+/MainWindow$InsertionSortThread.class
+/MainWindow$GenericListener.class
+/MainWindow$SliderListener.class

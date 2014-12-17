@@ -14,4 +14,10 @@ public abstract class SortThread extends Thread {
 		sp.setIndex(0);
 		sorted = false;
 	}
+	public void setDelay(int msdelay){
+		this.msdelay = msdelay;
+	}
+	public boolean isSorted(){
+		return sorted;
+	}
 }

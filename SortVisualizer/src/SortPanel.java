@@ -84,6 +84,9 @@ public class SortPanel extends JPanel {
 		int temp = list.get(i1);
 		list.set(i1, list.get(i2));
 		list.set(i2, temp);
+		Colors tempColor = colorList.get(i1);
+		colorList.set(i1, colorList.get(i2));
+		colorList.set(i2, tempColor);
 	}
 
 	public void paintComponent(Graphics g) {

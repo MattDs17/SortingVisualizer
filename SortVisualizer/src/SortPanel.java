@@ -47,6 +47,9 @@ public class SortPanel extends JPanel {
 	public ArrayList<Integer> getList(){
 		return list;
 	}
+	public Colors getColor(int index){
+		return colorList.get(index);
+	}
 
 	public void addNum(int num) {
 		list.add(num);

@@ -1,7 +1,7 @@
 import java.awt.Color;
 
 public enum Colors {
-	INACTIVE(191, 191, 191), SORTED(87, 232, 14), TARGET(255, 20, 20), ACTIVE(8,8,8);
+	INACTIVE(191, 191, 191), SORTED(87, 232, 14), TARGET(255, 20, 20), ACTIVE(8,8,8), LOWER(245,0,61), UPPER(245,61,0);
 
 	private final Color col;
 

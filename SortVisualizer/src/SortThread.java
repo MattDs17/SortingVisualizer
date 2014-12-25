@@ -20,4 +20,5 @@ public abstract class SortThread extends Thread {
 	public boolean isSorted(){
 		return sorted;
 	}
+	
 }

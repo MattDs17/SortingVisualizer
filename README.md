@@ -1,4 +1,4 @@
 SortingVisualizer
 =================
 
-Graphical representation of various sorting algorithms.
+Graphical representation of Selection Sort, Insertion Sort, Merge Sort, and Quick Sort.

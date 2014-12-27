@@ -24,6 +24,7 @@ public class MainWindow {
 	private SelectionSortThread selectionSortThread;
 	private InsertionSortThread insertionSortThread;
 	private MergeSortThread mergeSortThread;
+	private QuickSortThread quickSortThread;
 	private int delay;
 
 	public MainWindow() {
@@ -52,6 +53,7 @@ public class MainWindow {
 		selectionSortThread = new SelectionSortThread(selectionSort, delay);
 		insertionSortThread = new InsertionSortThread(insertionSort, delay);
 		mergeSortThread = new MergeSortThread(mergeSort, delay);
+		quickSortThread = new QuickSortThread(quickSort, delay);
 
 		numbersPane = new JEditorPane();
 		ButtonListener buttonListener = new ButtonListener();
@@ -116,6 +118,9 @@ public class MainWindow {
 		}
 		if (mergeSortThread.isAlive()) {
 			mergeSortThread.setDelay(delay);
+		}
+		if (quickSortThread.isAlive()) {
+			quickSortThread.setDelay(delay);
 		}
 
 	}
@@ -190,7 +195,8 @@ public class MainWindow {
 
 	public boolean checkAllSorted() {
 		sorted = (selectionSortThread.isSorted()
-				&& insertionSortThread.isSorted() && mergeSortThread.isSorted());
+				&& insertionSortThread.isSorted() && mergeSortThread.isSorted() && quickSortThread
+				.isSorted());
 		return sorted;
 	}
 
@@ -212,6 +218,8 @@ public class MainWindow {
 					insertionSortThread.start();
 					mergeSortThread = new MergeSortThread(mergeSort, delay);
 					mergeSortThread.start();
+					quickSortThread = new QuickSortThread(quickSort, delay);
+					quickSortThread.start();
 					frame.repaint();
 					startButton.setText("Stop");
 					startButton.setToolTipText("Stop sort.");
@@ -281,6 +289,7 @@ public class MainWindow {
 		public void run() {
 			int smallestIndex;
 			int listSize = sp.getListSize();
+
 			for (int a = 0; a < listSize && started; a++) {
 				while (paused) {
 					try {
@@ -290,6 +299,8 @@ public class MainWindow {
 					}
 				}
 				smallestIndex = a;
+				sp.setLine(sp.get(smallestIndex));
+				sp.setMessage("Searching remaining list for smallest element. Smallest found: " + sp.get(smallestIndex));
 				for (int i = a; i < listSize && started; i++) {
 					while (paused) {
 						try {
@@ -305,6 +316,8 @@ public class MainWindow {
 						sp.setColor(i, Colors.TARGET);
 						sp.setColor(smallestIndex, Colors.ACTIVE);
 						smallestIndex = i;
+						sp.setLine(sp.get(smallestIndex));
+						sp.setMessage("Searching remaining list for smallest element. Smallest found: " + sp.get(smallestIndex) + ".");
 					}
 					sp.repaint();
 					try {
@@ -318,6 +331,8 @@ public class MainWindow {
 
 				if (a == listSize - 1) {
 					sorted = true;
+					sp.setLine(0);
+					sp.setMessage("Sorted!");
 				} else {
 					sp.setColorRange(a + 1, Colors.ACTIVE);
 				}
@@ -344,6 +359,8 @@ public class MainWindow {
 				sp.setColorRange(0, i, Colors.ACTIVE);
 				sp.setColor(i, Colors.TARGET);
 				int val = sp.get(i);
+				sp.setLine(val);
+				sp.setMessage("Finding location where previous numbers < " + val + " < following numbers.");
 				for (int j = i - 1; j >= 0 && val < sp.get(j); j--) {
 					while (paused) {
 						try {
@@ -353,7 +370,7 @@ public class MainWindow {
 						}
 					}
 					sp.swap(j, j + 1);
-					sp.repaint();
+					sp.repaint();					
 					try {
 						Thread.sleep(msdelay);
 					} catch (Exception ex) {
@@ -365,6 +382,8 @@ public class MainWindow {
 				if (i == listSize - 1 && started) {
 					sorted = true;
 					sp.setColorRange(0, Colors.SORTED);
+					sp.setLine(0);
+					sp.setMessage("Sorted!");
 					sp.repaint();
 				}
 				try {
@@ -403,6 +422,7 @@ public class MainWindow {
 					sp.setColorRange(a, (a + b) / 2, Colors.LOWER);
 					sp.setColorRange((a + b) / 2, b, Colors.UPPER);
 					sp.repaint();
+					sp.setMessage("Dividing list from index " + a + " to " + (b-1) + " in half.");
 					try {
 						Thread.sleep(msdelay);
 					} catch (Exception ex) {
@@ -423,6 +443,7 @@ public class MainWindow {
 				sp.setColorRange(a, mid, Colors.LOWER);
 				sp.setColorRange(mid, b, Colors.UPPER);
 				sp.repaint();
+				sp.setMessage("Merging values from index " + a + " to " + (b-1) + " in order.");
 				try {
 					Thread.sleep(msdelay);
 				} catch (Exception ex) {
@@ -450,10 +471,12 @@ public class MainWindow {
 					}
 					if (lower[i] < upper[j]) {
 						nums.set(index, lower[i]);
+						sp.setLine(lower[i]);
 						i++;
 						sp.setColor(index, Colors.LOWER);
 					} else {
 						nums.set(index, upper[j]);
+						sp.setLine(upper[j]);
 						j++;
 						sp.setColor(index, Colors.UPPER);
 					}
@@ -474,7 +497,8 @@ public class MainWindow {
 						}
 					}
 					nums.set(index, lower[i]);
-					sp.setColor(index, Colors.LOWER);
+					sp.setLine(lower[i]);
+					sp.setColor(index, Colors.LOWER);					
 					i++;
 					index++;
 					sp.repaint();
@@ -485,7 +509,15 @@ public class MainWindow {
 					}
 				}
 				while (j < upper.length) {
+					while (paused) {
+						try {
+							Thread.sleep(10);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
 					nums.set(index, upper[j]);
+					sp.setLine(upper[j]);
 					sp.setColor(index, Colors.UPPER);
 					j++;
 					index++;
@@ -503,6 +535,8 @@ public class MainWindow {
 			mergeSort(list, 0, list.size());
 			if (started) {
 				sorted = true;
+				sp.setLine(0);
+				sp.setMessage("Sorted!");
 				sp.setColorRange(0, Colors.SORTED);
 				sp.repaint();
 			}
@@ -512,5 +546,85 @@ public class MainWindow {
 			}
 		}
 
+	}
+
+	class QuickSortThread extends SortThread {
+
+		public QuickSortThread(SortPanel sp, long msdelay) {
+			super(sp, msdelay);
+			sp.setIndex(-1);
+		}
+
+		public int partition(ArrayList<Integer> nums, int a, int b) {
+			if (started) {
+				int pivot = nums.get(b);
+				sp.setLine(pivot);
+				
+				sp.setColorRange(a,b,Colors.ACTIVE);
+				sp.setColor(b, Colors.TARGET);
+				int greater = a;
+				sp.setMessage("Moving elements before/after index " + greater + " if they are < or > " + pivot + ".");
+				for (int i = a; i < b && started; i++) {
+					sp.setIndex(i);
+					while (paused) {
+						try {
+							Thread.sleep(10);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+					if (nums.get(i) < pivot) {
+						sp.setColor(i,Colors.LOWER);
+						sp.swap(i, greater);
+						greater++;
+						sp.setMessage("Moving elements before/after index " + greater + " if they are < or > " + pivot + ".");
+					} else {
+						sp.setColor(i,Colors.UPPER);
+					}
+					sp.repaint();
+					try {
+						Thread.sleep(msdelay);
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+				sp.swap(greater, b);
+				sp.repaint();
+				try {
+					Thread.sleep(msdelay);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			
+			return greater;
+			}
+			return -1;
+		}
+
+		public void quickSort(ArrayList<Integer> nums, int a, int b) {
+			sp.setColorRange(0, Colors.INACTIVE);
+			sp.repaint();
+			if (a < b + 1 && started) {
+				int pivot = partition(nums, a, b);
+				quickSort(nums, a, pivot - 1);
+				quickSort(nums, pivot + 1, b);
+			}
+		}
+
+		public void run() {
+			quickSort(list, 0, list.size() - 1);
+			if (started) {
+				sorted = true;
+				sp.setLine(0);
+				sp.setMessage("Sorted!");
+				sp.setColorRange(0, Colors.SORTED);
+				sp.setIndex(-1);
+				sp.repaint();
+			}
+
+			if (checkAllSorted() && started) {
+				MainWindow.this.start();
+			}
+		}
 	}
 }

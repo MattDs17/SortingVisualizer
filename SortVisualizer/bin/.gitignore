@@ -4,3 +4,6 @@
 /MainWindow$ButtonListener.class
 /MainWindow$MergeSortThread.class
 /mergeSortTest.class
+/quickSortTest.class
+/MainWindow$quickSortThread.class
+/MainWindow$QuickSortThread.class

@@ -25,7 +25,7 @@ public class SortPanel extends JPanel {
 		index = 0;
 		line = 0;
 	}
-
+	// Used to determine the vertical scale
 	public int getMaxIndex() {
 		int max = 0;
 		for (int i = 1; i < list.size(); i++) {
@@ -35,43 +35,39 @@ public class SortPanel extends JPanel {
 		}
 		return max;
 	}
-
+	// Returns the length of the list
 	public int getListSize() {
 		return list.size();
 	}
-
+	// Returns the element at the given index
 	public int get(int index) {
 		return list.get(index);
 	}
-
+	// Used by SortThread
 	public ArrayList<Integer> getList() {
 		return list;
 	}
-
+	// Returns the Color at a given index
 	public Colors getColor(int index) {
 		return colorList.get(index);
 	}
-
-	public void addNum(int num) {
-		list.add(num);
-	}
-
+	// Used in initializing the list
 	public void setList(ArrayList<Integer> list) {
 		this.list = list;
-
 	}
-
+	// Sets the index to display on the SortPanel
 	public void setIndex(int index) {
 		this.index = index;
 	}
+	// Sets the message to explain the step occurring in sorting
 	public void setMessage(String message){
 		this.message = message;
 	}
-
+	// Assigns a value to the list
 	public void setNum(int num, int index) {
 		list.set(index, num);
 	}
-
+	// Assigns a color to a range of values
 	public void setColorRange(int a, int b, Colors c) {
 		for (int i = a; i < b; i++) {
 			if (i >= colorList.size()) {
@@ -81,22 +77,20 @@ public class SortPanel extends JPanel {
 			}
 		}
 	}
-
+	// Calls the above method with the end index inserted
 	public void setColorRange(int a, Colors c) {
-		for (int i = a; i < colorList.size(); i++) {
-			colorList.set(i, c);
-		}
+		setColorRange(a, colorList.size(), c);
 	}
-
+	// Assigns a color to a particular index
 	public void setColor(int a, Colors c) {
 		colorList.set(a, c);
 	}
-
+	// Assigns a value for the horizontal line
 	public void setLine(int a) {
 		if (a >= 0)
 			line = a;
 	}
-
+	// Swaps two list values and their colors
 	public void swap(int i1, int i2) {
 		int temp = list.get(i1);
 		list.set(i1, list.get(i2));

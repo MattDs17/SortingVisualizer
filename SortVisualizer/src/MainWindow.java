@@ -107,6 +107,7 @@ public class MainWindow {
 		frame.setVisible(true);
 	}
 
+	// Sets delay between sort actions
 	private void setDelay(int delay) {
 		this.delay = delay;
 		delayLabel.setText("Delay = " + delay + " ms");
@@ -125,6 +126,7 @@ public class MainWindow {
 
 	}
 
+	// Sets the values in the four lists to the values in the JEditorPane
 	private void setValues(String nums) {
 		String[] numArray = nums.split(" ");
 		selectionList.clear();
@@ -146,6 +148,7 @@ public class MainWindow {
 		}
 	}
 
+	// Fills the JEditorPane with numbers 1 to 35
 	private void fillSorted() {
 		if (checkAllSorted() || !started) {
 			String s = "";
@@ -157,6 +160,7 @@ public class MainWindow {
 		}
 	}
 
+	// Fills the JEditorPane with numbers 35 to 1
 	private void fillReversed() {
 		if (checkAllSorted() || !started) {
 			String s = "";
@@ -168,17 +172,19 @@ public class MainWindow {
 		}
 	}
 
+	// Fills the JEditorPane with numbers randomly from 1 to 35
 	private void fillRandomized() {
 		if (checkAllSorted() || !started) {
 			String s = "";
 			for (int i = 1; i <= 35; i++) {
-				s += Math.round(Math.random() * 35) + " ";
+				s += Math.round(Math.random() * 35 + 1) + " ";
 			}
 			numbersPane.setText(s);
 			setValues(s);
 		}
 	}
 
+	// Checks if there are actual numbers entered into the JEditorPane
 	public boolean hasNums(String str) {
 		String[] numArray = str.split(" ");
 		for (String s : numArray) {
@@ -189,10 +195,8 @@ public class MainWindow {
 		return false;
 	}
 
-	public boolean isStarted() {
-		return started;
-	}
-
+	// Checks if all four lists have given confirmation that they have been
+	// sorted
 	public boolean checkAllSorted() {
 		sorted = (selectionSortThread.isSorted()
 				&& insertionSortThread.isSorted() && mergeSortThread.isSorted() && quickSortThread
@@ -200,6 +204,8 @@ public class MainWindow {
 		return sorted;
 	}
 
+	// Works as a toggle, initializing a new sort or terminating an ongoing
+	// sort.
 	private void start() {
 		if (hasNums(numbersPane.getText())) {
 			started = !started;
@@ -236,6 +242,7 @@ public class MainWindow {
 		}
 	}
 
+	// Works as a toggle, pausing the threads
 	private void pause() {
 		paused = !paused;
 
@@ -254,8 +261,8 @@ public class MainWindow {
 		MainWindow mw = new MainWindow();
 	}
 
+	// Interprets button events
 	class ButtonListener implements ActionListener {
-
 		public void actionPerformed(ActionEvent event) {
 			if (event.getSource() == startButton) {
 				start();
@@ -270,17 +277,15 @@ public class MainWindow {
 			}
 		}
 	}
-
+	// Modifies delay value based on slider location
 	class SliderListener implements ChangeListener {
-
-		@Override
 		public void stateChanged(ChangeEvent e) {
 			JSlider source = (JSlider) e.getSource();
 			setDelay(source.getValue());
 		}
 
 	}
-
+	// First sort thread. Runs a selection sort algorithm.
 	class SelectionSortThread extends SortThread {
 		public SelectionSortThread(SortPanel sp, long msdelay) {
 			super(sp, msdelay);
@@ -300,7 +305,8 @@ public class MainWindow {
 				}
 				smallestIndex = a;
 				sp.setLine(sp.get(smallestIndex));
-				sp.setMessage("Searching remaining list for smallest element. Smallest found: " + sp.get(smallestIndex));
+				sp.setMessage("Searching remaining list for smallest element. Smallest found: "
+						+ sp.get(smallestIndex));
 				for (int i = a; i < listSize && started; i++) {
 					while (paused) {
 						try {
@@ -317,7 +323,8 @@ public class MainWindow {
 						sp.setColor(smallestIndex, Colors.ACTIVE);
 						smallestIndex = i;
 						sp.setLine(sp.get(smallestIndex));
-						sp.setMessage("Searching remaining list for smallest element. Smallest found: " + sp.get(smallestIndex) + ".");
+						sp.setMessage("Searching remaining list for smallest element. Smallest found: "
+								+ sp.get(smallestIndex) + ".");
 					}
 					sp.repaint();
 					try {
@@ -345,13 +352,11 @@ public class MainWindow {
 			}
 		}
 	}
-
+	// Second sort thread. Runs an insertion sort algorithm.
 	class InsertionSortThread extends SortThread {
-
 		public InsertionSortThread(SortPanel sp, long msdelay) {
 			super(sp, msdelay);
 		}
-
 		public void run() {
 			int listSize = sp.getListSize();
 			for (int i = 0; i < listSize && started; i++) {
@@ -360,7 +365,8 @@ public class MainWindow {
 				sp.setColor(i, Colors.TARGET);
 				int val = sp.get(i);
 				sp.setLine(val);
-				sp.setMessage("Finding location where previous numbers < " + val + " < following numbers.");
+				sp.setMessage("Finding location where previous numbers < "
+						+ val + " < following numbers.");
 				for (int j = i - 1; j >= 0 && val < sp.get(j); j--) {
 					while (paused) {
 						try {
@@ -370,7 +376,7 @@ public class MainWindow {
 						}
 					}
 					sp.swap(j, j + 1);
-					sp.repaint();					
+					sp.repaint();
 					try {
 						Thread.sleep(msdelay);
 					} catch (Exception ex) {
@@ -397,16 +403,15 @@ public class MainWindow {
 				MainWindow.this.start();
 			}
 		}
-
 	}
-
+	// Third sort thread. Runs a merge sort algorithm.
 	class MergeSortThread extends SortThread {
 
 		public MergeSortThread(SortPanel sp, long msdelay) {
 			super(sp, msdelay);
 			sp.setIndex(-1);
 		}
-
+		// Division and joining
 		public void mergeSort(ArrayList<Integer> nums, int a, int b) {
 			if (started) {
 				while (paused) {
@@ -422,7 +427,8 @@ public class MainWindow {
 					sp.setColorRange(a, (a + b) / 2, Colors.LOWER);
 					sp.setColorRange((a + b) / 2, b, Colors.UPPER);
 					sp.repaint();
-					sp.setMessage("Dividing list from index " + a + " to " + (b-1) + " in half.");
+					sp.setMessage("Dividing list from index " + a + " to "
+							+ (b - 1) + " in half.");
 					try {
 						Thread.sleep(msdelay);
 					} catch (Exception ex) {
@@ -434,7 +440,7 @@ public class MainWindow {
 				}
 			}
 		}
-
+		// Merging
 		public void merge(ArrayList<Integer> nums, int a, int mid, int b) {
 			if (started) {
 				int[] lower = new int[mid - a];
@@ -443,7 +449,8 @@ public class MainWindow {
 				sp.setColorRange(a, mid, Colors.LOWER);
 				sp.setColorRange(mid, b, Colors.UPPER);
 				sp.repaint();
-				sp.setMessage("Merging values from index " + a + " to " + (b-1) + " in order.");
+				sp.setMessage("Merging values from index " + a + " to "
+						+ (b - 1) + " in order.");
 				try {
 					Thread.sleep(msdelay);
 				} catch (Exception ex) {
@@ -498,7 +505,7 @@ public class MainWindow {
 					}
 					nums.set(index, lower[i]);
 					sp.setLine(lower[i]);
-					sp.setColor(index, Colors.LOWER);					
+					sp.setColor(index, Colors.LOWER);
 					i++;
 					index++;
 					sp.repaint();
@@ -547,23 +554,23 @@ public class MainWindow {
 		}
 
 	}
-
+	// Fourth sort thread. Runs a quick sort algorithm with the rightmost element as pivot.
 	class QuickSortThread extends SortThread {
 
 		public QuickSortThread(SortPanel sp, long msdelay) {
 			super(sp, msdelay);
 			sp.setIndex(-1);
 		}
-
 		public int partition(ArrayList<Integer> nums, int a, int b) {
 			if (started) {
 				int pivot = nums.get(b);
 				sp.setLine(pivot);
-				
-				sp.setColorRange(a,b,Colors.ACTIVE);
+
+				sp.setColorRange(a, b, Colors.ACTIVE);
 				sp.setColor(b, Colors.TARGET);
 				int greater = a;
-				sp.setMessage("Moving elements before/after index " + greater + " if they are < or > " + pivot + ".");
+				sp.setMessage("Moving elements before/after index " + greater
+						+ " if they are < or > " + pivot + ".");
 				for (int i = a; i < b && started; i++) {
 					sp.setIndex(i);
 					while (paused) {
@@ -574,12 +581,14 @@ public class MainWindow {
 						}
 					}
 					if (nums.get(i) < pivot) {
-						sp.setColor(i,Colors.LOWER);
+						sp.setColor(i, Colors.LOWER);
 						sp.swap(i, greater);
 						greater++;
-						sp.setMessage("Moving elements before/after index " + greater + " if they are < or > " + pivot + ".");
+						sp.setMessage("Moving elements before/after index "
+								+ greater + " if they are < or > " + pivot
+								+ ".");
 					} else {
-						sp.setColor(i,Colors.UPPER);
+						sp.setColor(i, Colors.UPPER);
 					}
 					sp.repaint();
 					try {
@@ -595,8 +604,8 @@ public class MainWindow {
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
-			
-			return greater;
+
+				return greater;
 			}
 			return -1;
 		}

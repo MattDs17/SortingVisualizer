@@ -1,9 +1,10 @@
-/MainWindow$InsertionSortThread.class
-/MainWindow$GenericListener.class
-/MainWindow$SliderListener.class
+/Colors.class
 /MainWindow$ButtonListener.class
+/MainWindow$InsertionSortThread.class
 /MainWindow$MergeSortThread.class
-/mergeSortTest.class
-/quickSortTest.class
-/MainWindow$quickSortThread.class
 /MainWindow$QuickSortThread.class
+/MainWindow$SelectionSortThread.class
+/MainWindow$SliderListener.class
+/MainWindow.class
+/SortPanel.class
+/SortThread.class

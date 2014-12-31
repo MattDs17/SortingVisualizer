@@ -14,11 +14,12 @@ public abstract class SortThread extends Thread {
 		sp.setIndex(0);
 		sorted = false;
 	}
+	// Used by MainWindow to update delay when changed
 	public void setDelay(int msdelay){
 		this.msdelay = msdelay;
 	}
+	// Returns whether or not the list has finished being sorted
 	public boolean isSorted(){
 		return sorted;
-	}
-	
+	}	
 }

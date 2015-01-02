@@ -1,9 +1,7 @@
 
-// First sort thread. Runs a selection sort algorithm.
-class SelectionSortThread extends SortThread {
-	/**
-	 * 
-	 */
+/** Runs a selection sort algorithm. */
+public class SelectionSortThread extends SortThread {
+
 	private final MainWindow mainWindow;
 
 	public SelectionSortThread(MainWindow mainWindow, SortPanel sp, long msdelay) {
@@ -12,63 +10,60 @@ class SelectionSortThread extends SortThread {
 	}
 
 	public void run() {
-		int smallestIndex;
+		int i, smallestIndex;
 		int listSize = sp.getListSize();
 
-		for (int a = 0; a < listSize && this.mainWindow.started; a++) {
-			while (this.mainWindow.paused) {
-				try {
-					Thread.sleep(10);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-			smallestIndex = a;
+		for (i = 0; i < listSize
+				&& (mainWindow.isStarted() || mainWindow.isPaused()); i++) {
+			if (mainWindow.isStopped())
+				return;
+
+			while (mainWindow.isPaused())
+				sleepThread(10);
+
+			smallestIndex = i;
 			sp.setLine(sp.get(smallestIndex));
 			sp.setMessage("Searching remaining list for smallest element. Smallest found: "
 					+ sp.get(smallestIndex));
-			for (int i = a; i < listSize && this.mainWindow.started; i++) {
-				while (this.mainWindow.paused) {
-					try {
-						Thread.sleep(10);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-				sp.setColor(smallestIndex, Colors.TARGET);
-				sp.setIndex(i);
 
-				if (sp.get(i) < sp.get(smallestIndex)) {
-					sp.setColor(i, Colors.TARGET);
+			for (int j = i; j < listSize
+					&& (mainWindow.isStarted() || mainWindow.isPaused()); j++) {
+				if (mainWindow.isStopped())
+					return;
+
+				while (mainWindow.isPaused())
+					sleepThread(10);
+
+				sp.setColor(smallestIndex, Colors.TARGET);
+				sp.setIndex(j);
+
+				if (sp.get(j) < sp.get(smallestIndex)) {
+					sp.setColor(j, Colors.TARGET);
 					sp.setColor(smallestIndex, Colors.ACTIVE);
-					smallestIndex = i;
+					smallestIndex = j;
 					sp.setLine(sp.get(smallestIndex));
 					sp.setMessage("Searching remaining list for smallest element. Smallest found: "
 							+ sp.get(smallestIndex) + ".");
 				}
-				sp.repaint();
-				try {
-					Thread.sleep(msdelay);
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
+				repaint();
+				sleepThread(msdelay);
 			}
-			sp.swap(a, smallestIndex);
-			sp.setColor(a, Colors.SORTED);
-
-			if (a == listSize - 1) {
-				sorted = true;
-				sp.setLine(0);
-				sp.setMessage("Sorted!");
-			} else {
-				sp.setColorRange(a + 1, Colors.ACTIVE);
-			}
-			sp.repaint();
-
+			sp.swap(i, smallestIndex);
+			sp.setColor(i, Colors.SORTED);
+			repaint();
 		}
-		sp.repaint();
-		if (this.mainWindow.checkAllSorted() && this.mainWindow.started) {
-			this.mainWindow.start();
+
+		if (i == listSize) {
+			sorted = true;
+			sp.setLine(0);
+			sp.setMessage("Sorted!");
+		} else {
+			sp.setColorRange(i + 1, Colors.ACTIVE);
+		}
+		repaint();
+
+		if (mainWindow.checkAllSorted() && mainWindow.isStarted()) {
+			mainWindow.stop();
 		}
 	}
 }

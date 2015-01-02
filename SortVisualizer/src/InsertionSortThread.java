@@ -1,58 +1,66 @@
 
-// Second sort thread. Runs an insertion sort algorithm.
-class InsertionSortThread extends SortThread {
-	/**
-	 * 
-	 */
+/** Runs an insertion sort algorithm. */
+public class InsertionSortThread extends SortThread {
+
 	private final MainWindow mainWindow;
+	
 	public InsertionSortThread(MainWindow mainWindow, SortPanel sp, long msdelay) {
 		super(sp, msdelay);
 		this.mainWindow = mainWindow;
 	}
+	
+	public void initialSP(int index) {
+		sp.setIndex(index);
+		sp.setColorRange(0, index, Colors.ACTIVE);
+		sp.setColor(index, Colors.TARGET);
+		sp.setLine(sp.get(index));
+		sp.setMessage("Finding location where previous numbers < "
+				+ sp.get(index) + " < following numbers.");
+	}
+
+	private void finalSP() {
+		sp.setColorRange(0, Colors.SORTED);
+		sp.setLine(0);
+		sp.setMessage("Sorted!");
+	}
+	
 	public void run() {
 		int listSize = sp.getListSize();
-		for (int i = 0; i < listSize && this.mainWindow.started; i++) {
-			sp.setIndex(i);
-			sp.setColorRange(0, i, Colors.ACTIVE);
-			sp.setColor(i, Colors.TARGET);
-			int val = sp.get(i);
-			sp.setLine(val);
-			sp.setMessage("Finding location where previous numbers < "
-					+ val + " < following numbers.");
-			for (int j = i - 1; j >= 0 && val < sp.get(j); j--) {
-				while (this.mainWindow.paused) {
-					try {
-						Thread.sleep(10);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-				sp.swap(j, j + 1);
-				sp.repaint();
-				try {
-					Thread.sleep(msdelay);
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
+		int i, j, val;
 
+		for (i = 0; i < listSize
+				&& (mainWindow.isStarted() || mainWindow.isPaused()); i++) {
+			if (mainWindow.isStopped())
+				return;
+
+			while (mainWindow.isPaused())
+				sleepThread(10);
+
+			initialSP(i);
+			val = sp.get(i);
+			for (j = i - 1; j >= 0 && val < sp.get(j); j--) {
+				if (mainWindow.isStopped())
+					return;
+
+				while (mainWindow.isPaused())
+					sleepThread(10);
+
+				sp.swap(j, j + 1);
+				repaint();
+				sleepThread(msdelay);
 			}
-			sp.repaint();
-			if (i == listSize - 1 && this.mainWindow.started) {
-				sorted = true;
-				sp.setColorRange(0, Colors.SORTED);
-				sp.setLine(0);
-				sp.setMessage("Sorted!");
-				sp.repaint();
-			}
-			try {
-				Thread.sleep(msdelay);
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
+			repaint();
 		}
 
-		if (this.mainWindow.checkAllSorted() && this.mainWindow.started) {
-			this.mainWindow.start();
+		if (i == listSize && mainWindow.isStarted()) {
+			sorted = true;
+			finalSP();
+			repaint();
+		}
+		sleepThread(msdelay);
+		
+		if (mainWindow.checkAllSorted() && mainWindow.isStarted()) {
+			mainWindow.stop();
 		}
 	}
 }

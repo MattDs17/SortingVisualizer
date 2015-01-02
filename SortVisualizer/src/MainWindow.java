@@ -2,9 +2,15 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collections;
 
-import javax.swing.*;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JEditorPane;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -30,17 +36,11 @@ public class MainWindow {
 	private QuickSortThread quickSortThread;
 	private ArrayList<SortThread> sortThreads = new ArrayList<SortThread>();
 
-	boolean started;
-	boolean paused;
-	private boolean sorted;
-
 	private State state = State.STOPPED;
 	private int delay;
 
 	public MainWindow() {
 		delay = 500;
-		started = false;
-		paused = false;
 
 		frame = new JFrame("Sorting Algorithms Visualizer");
 		frame.setLayout(new GridLayout(3, 2, 10, 10));
@@ -238,7 +238,7 @@ public class MainWindow {
 	 * sort.
 	 */
 	void start() {
-		/*if (!hasNums(numbersPane.getText()))
+		if (!hasNums(numbersPane.getText()))
 			return;
 		
 		state = (state == State.PAUSED || state == State.STOPPED) ? State.STARTED
@@ -247,6 +247,8 @@ public class MainWindow {
 			return;
 		
 		sortThreads.clear();
+		pauseButton.setVisible(true);
+		setValues(numbersPane.getText());
 		if (selectionList.size() > 0) {
 			selectionSortThread = new SelectionSortThread(this,
 					selectionSort, delay);
@@ -266,66 +268,29 @@ public class MainWindow {
 			sortThreads.add(quickSortThread);
 			quickSortThread.start();
 
-			frame.repaint();
 			startButton.setText("Stop");
 			startButton.setToolTipText("Stop sort.");
-		}*/
-
-		
-		
-		
-		
-		
-		started = !started;
-
-		if (started) {
-			if (paused) {
-				pause();
-			}
-			pauseButton.setVisible(true);
-			setValues(numbersPane.getText());
-			if (selectionList.size() > 0) {
-				selectionSortThread = new SelectionSortThread(this,
-						selectionSort, delay);
-				selectionSortThread.start();
-				insertionSortThread = new InsertionSortThread(this,
-						insertionSort, delay);
-				insertionSortThread.start();
-				mergeSortThread = new MergeSortThread(this, mergeSort, delay);
-				mergeSortThread.start();
-				quickSortThread = new QuickSortThread(this, quickSort, delay);
-				quickSortThread.start();
-				frame.repaint();
-				startButton.setText("Stop");
-				startButton.setToolTipText("Stop sort.");
-			}
-		} else {
-			if (paused) {
-				pause();
-			}
-			pauseButton.setVisible(false);
-			startButton.setText("Start");
-			startButton
-					.setToolTipText("Start sort with numbers provided in text box.");
+			frame.repaint();
 		}
 	}
 
 	/** Works as a toggle, pausing the threads*/
 	private void pause() {
-		paused = !paused;
-
-		if (paused) {
+		state = (state == State.STARTED || state == State.STOPPED) ? State.PAUSED
+				: State.STARTED;
+		
+		if (isPaused()) {
 			startButton.setVisible(false);
 			pauseButton.setText("Unpause");
 			pauseButton.setToolTipText("Unpause the current sort.");
-		} else {
+		} else if (isStarted()) {
 			startButton.setVisible(true);
 			pauseButton.setText("Pause");
 			pauseButton.setToolTipText("Pause the current sort.");
 		}
 	}
 	
-	private void stop() {
+	protected void stop() {
 		state = (state == State.STARTED || state == State.PAUSED) ? State.STOPPED
 				: State.STARTED;
 		if (!isStopped())
@@ -339,6 +304,8 @@ public class MainWindow {
 			if (sortThread.isAlive())
 				sortThread.stopThread();
 		}
+		sortThreads.clear();
+		sortPanels.clear();
 	}
 
 	/** Interprets button events */
@@ -346,11 +313,10 @@ public class MainWindow {
 		@Override
 		public void actionPerformed(ActionEvent event) {
 			if (event.getSource() == startButton) {
-				start();
-				/*if (startButton.getText().equalsIgnoreCase("Start"))
+				if (startButton.getText().equalsIgnoreCase("Start"))
 					start();
 				else
-					stop();*/
+					stop();
 			} else if (event.getSource() == pauseButton) {
 				pause();
 			} else if (event.getSource() == sortedPresetButton) {

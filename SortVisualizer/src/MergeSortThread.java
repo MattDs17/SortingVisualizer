@@ -14,144 +14,123 @@ public class MergeSortThread extends SortThread {
 	
 	/** Division and joining */
 	public void mergeSort(ArrayList<Integer> nums, int a, int b) {
-		if (this.mainWindow.started) {
-			while (this.mainWindow.paused) {
-				try {
-					Thread.sleep(10);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-			sp.setColorRange(0, Colors.INACTIVE);
+		if (mainWindow.isStopped())
+			return;
 
-			if (b > a + 1) {
-				sp.setColorRange(a, (a + b) / 2, Colors.LOWER);
-				sp.setColorRange((a + b) / 2, b, Colors.UPPER);
-				sp.repaint();
-				sp.setMessage("Dividing list from index " + a + " to "
-						+ (b - 1) + " in half.");
-				try {
-					Thread.sleep(msdelay);
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-				mergeSort(nums, a, (a + b) / 2);
-				mergeSort(nums, (a + b) / 2, b);
-				merge(nums, a, (a + b) / 2, b);
-			}
+		while (mainWindow.isPaused())
+			sleepThread(10);
+
+		if (b > a + 1) {
+			initialSP(a, (a + b) / 2, b, "Dividing list from index " + a
+					+ " to " + (b - 1) + " in half.");
+			sleepThread(msdelay);
+
+			mergeSort(nums, a, (a + b) / 2);
+			mergeSort(nums, (a + b) / 2, b);
+			merge(nums, a, (a + b) / 2, b);
 		}
 	}
 
 	/** Merging */
 	public void merge(ArrayList<Integer> nums, int a, int mid, int b) {
-		if (this.mainWindow.started) {
-			int[] lower = new int[mid - a];
-			int[] upper = new int[b - mid];
-			sp.setColorRange(0, Colors.INACTIVE);
-			sp.setColorRange(a, mid, Colors.LOWER);
-			sp.setColorRange(mid, b, Colors.UPPER);
-			sp.repaint();
-			sp.setMessage("Merging values from index " + a + " to "
-					+ (b - 1) + " in order.");
-			try {
-				Thread.sleep(msdelay);
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-			int index = a;
-			int i;
-			int j;
-			for (i = 0; index < mid; i++, index++) {
-				lower[i] = nums.get(index);
-			}
-			for (j = 0; index < b; j++, index++) {
-				upper[j] = nums.get(index);
-			}
-			i = 0;
-			j = 0;
-			index = a;
-			while (i < lower.length && j < upper.length) {
-				while (this.mainWindow.paused) {
-					try {
-						Thread.sleep(10);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-				if (lower[i] < upper[j]) {
-					nums.set(index, lower[i]);
-					sp.setLine(lower[i]);
-					i++;
-					sp.setColor(index, Colors.LOWER);
-				} else {
-					nums.set(index, upper[j]);
-					sp.setLine(upper[j]);
-					j++;
-					sp.setColor(index, Colors.UPPER);
-				}
-				index++;
-				sp.repaint();
-				try {
-					Thread.sleep(msdelay);
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
-			while (i < lower.length) {
-				while (this.mainWindow.paused) {
-					try {
-						Thread.sleep(10);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
+		if (mainWindow.isStopped())
+			return;
+
+		while (mainWindow.isPaused())
+			sleepThread(10);
+
+		int[] lower = new int[mid - a];
+		int[] upper = new int[b - mid];
+
+		int index = a;
+		int i, j;
+		for (i = 0; index < mid; i++, index++)
+			lower[i] = nums.get(index);
+		for (j = 0; index < b; j++, index++)
+			upper[j] = nums.get(index);
+
+		initialSP(a, mid, b);
+		sleepThread(msdelay);
+
+		i = j = 0;
+		index = a;
+		while (i < lower.length && j < upper.length) {
+			while (mainWindow.isPaused())
+				sleepThread(10);
+
+			if (lower[i] < upper[j]) {
 				nums.set(index, lower[i]);
-				sp.setLine(lower[i]);
-				sp.setColor(index, Colors.LOWER);
+				changeSP(lower[i], index, Colors.LOWER);
 				i++;
-				index++;
-				sp.repaint();
-				try {
-					Thread.sleep(msdelay);
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
-			while (j < upper.length) {
-				while (this.mainWindow.paused) {
-					try {
-						Thread.sleep(10);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
+			} else {
 				nums.set(index, upper[j]);
-				sp.setLine(upper[j]);
-				sp.setColor(index, Colors.UPPER);
+				changeSP(lower[i], index, Colors.UPPER);
 				j++;
-				index++;
-				sp.repaint();
-				try {
-					Thread.sleep(msdelay);
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
 			}
+			index++;
+			sleepThread(msdelay);
+		}
+
+		while (i < lower.length) {
+			while (mainWindow.isPaused())
+				sleepThread(10);
+
+			nums.set(index, lower[i]);
+			changeSP(lower[i], index, Colors.LOWER);
+			i++; index++;
+			sleepThread(msdelay);
+		}
+
+		while (j < upper.length) {
+			while (mainWindow.isPaused())
+				sleepThread(10);
+
+			nums.set(index, upper[j]);
+			changeSP(upper[j], index, Colors.UPPER);
+			j++; index++;
+			sleepThread(msdelay);
 		}
 	}
 
+	private void initialSP(int a, int mid, int b) {
+		sp.setColorRange(0, Colors.INACTIVE);
+		sp.setColorRange(0, mid, Colors.LOWER);
+		sp.setColorRange(mid, b, Colors.UPPER);
+		sp.setMessage("Merging values from index " + a + " to "
+					+ (b - 1) + " in order.");
+		repaint();
+	}
+	
+	private void initialSP(int a, int mid, int b, String message) {
+		sp.setColorRange(0, Colors.INACTIVE);
+		sp.setColorRange(0, mid, Colors.LOWER);
+		sp.setColorRange(mid, b, Colors.UPPER);
+		sp.setMessage(message);
+		repaint();
+	}
+	
+	public void changeSP(int line, int index, Colors color) {
+		sp.setLine(line);
+		sp.setColor(index, color);
+		repaint();
+	}
+	
+	public void finalSP() {
+		sp.setLine(0);
+		sp.setMessage("Sorted!");
+		sp.setColorRange(0, Colors.SORTED);
+		repaint();
+	}
+	
 	public void run() {
 		mergeSort(list, 0, list.size());
-		if (this.mainWindow.started) {
+		if (mainWindow.isStarted()) {
 			sorted = true;
-			sp.setLine(0);
-			sp.setMessage("Sorted!");
-			sp.setColorRange(0, Colors.SORTED);
-			sp.repaint();
+			finalSP();
 		}
 
-		if (this.mainWindow.checkAllSorted() && this.mainWindow.started) {
-			this.mainWindow.start();
+		if (mainWindow.checkAllSorted() && mainWindow.isStarted()) {
+			mainWindow.stop();
 		}
 	}
 

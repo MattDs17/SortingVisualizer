@@ -1,10 +1,13 @@
 /Colors.class
+/InsertionSortThread.class
+/MainWindow$1.class
 /MainWindow$ButtonListener.class
-/MainWindow$InsertionSortThread.class
-/MainWindow$MergeSortThread.class
-/MainWindow$QuickSortThread.class
-/MainWindow$SelectionSortThread.class
 /MainWindow$SliderListener.class
+/MainWindow$State.class
 /MainWindow.class
+/MergeSortThread.class
+/QuickSortThread.class
+/SelectionSortThread.class
 /SortPanel.class
+/SortThread$1.class
 /SortThread.class

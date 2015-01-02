@@ -38,6 +38,8 @@ public class InsertionSortThread extends SortThread {
 
 			initialSP(i);
 			val = sp.get(i);
+			repaint();
+			sleepThread(msdelay);
 			for (j = i - 1; j >= 0 && val < sp.get(j); j--) {
 				if (mainWindow.isStopped())
 					return;

@@ -51,8 +51,10 @@ public class QuickSortThread extends SortThread {
 	}
 
 	public void quickSort(ArrayList<Integer> nums, int a, int b) {
+		if (mainWindow.isStopped())
+			return;
 		sp.setColorRange(0, Colors.INACTIVE);
-		sp.repaint();
+		repaint();
 		if (a < b + 1 && (mainWindow.isStarted() || mainWindow.isPaused())) {
 			if (mainWindow.isStopped())
 				return;
@@ -69,7 +71,7 @@ public class QuickSortThread extends SortThread {
 	private void initialSP(int a, int b, int pivot) {
 		sp.setLine(pivot);
 		sp.setColorRange(a, b, Colors.ACTIVE);
-		sp.setColorRange(0, Colors.TARGET);
+		sp.setColor(b, Colors.TARGET);
 		sp.setMessage("Moving elements before/after index " + a
 				+ " if they are < or > " + pivot + ".");
 	}

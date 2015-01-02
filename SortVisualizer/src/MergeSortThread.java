@@ -41,7 +41,7 @@ public class MergeSortThread extends SortThread {
 
 		int[] lower = new int[mid - a];
 		int[] upper = new int[b - mid];
-
+		
 		int index = a;
 		int i, j;
 		for (i = 0; index < mid; i++, index++)
@@ -49,12 +49,13 @@ public class MergeSortThread extends SortThread {
 		for (j = 0; index < b; j++, index++)
 			upper[j] = nums.get(index);
 
+
 		initialSP(a, mid, b);
 		sleepThread(msdelay);
 
 		i = j = 0;
 		index = a;
-		while (i < lower.length && j < upper.length) {
+		while (i < lower.length && j < upper.length && (mainWindow.isStarted() || mainWindow.isPaused())) {
 			while (mainWindow.isPaused())
 				sleepThread(10);
 
@@ -64,14 +65,14 @@ public class MergeSortThread extends SortThread {
 				i++;
 			} else {
 				nums.set(index, upper[j]);
-				changeSP(lower[i], index, Colors.UPPER);
+				changeSP(upper[i], index, Colors.UPPER);
 				j++;
 			}
 			index++;
 			sleepThread(msdelay);
 		}
 
-		while (i < lower.length) {
+		while (i < lower.length && (mainWindow.isStarted() || mainWindow.isPaused())) {
 			while (mainWindow.isPaused())
 				sleepThread(10);
 
@@ -81,7 +82,7 @@ public class MergeSortThread extends SortThread {
 			sleepThread(msdelay);
 		}
 
-		while (j < upper.length) {
+		while (j < upper.length && (mainWindow.isStarted() || mainWindow.isPaused())) {
 			while (mainWindow.isPaused())
 				sleepThread(10);
 
@@ -94,7 +95,7 @@ public class MergeSortThread extends SortThread {
 
 	private void initialSP(int a, int mid, int b) {
 		sp.setColorRange(0, Colors.INACTIVE);
-		sp.setColorRange(0, mid, Colors.LOWER);
+		sp.setColorRange(a, mid, Colors.LOWER);
 		sp.setColorRange(mid, b, Colors.UPPER);
 		sp.setMessage("Merging values from index " + a + " to "
 					+ (b - 1) + " in order.");
@@ -103,7 +104,7 @@ public class MergeSortThread extends SortThread {
 	
 	private void initialSP(int a, int mid, int b, String message) {
 		sp.setColorRange(0, Colors.INACTIVE);
-		sp.setColorRange(0, mid, Colors.LOWER);
+		sp.setColorRange(a, mid, Colors.LOWER);
 		sp.setColorRange(mid, b, Colors.UPPER);
 		sp.setMessage(message);
 		repaint();

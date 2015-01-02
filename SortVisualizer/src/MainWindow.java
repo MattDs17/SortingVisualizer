@@ -109,11 +109,9 @@ public class MainWindow {
 		quickSort.setList(quickList);
 		sortPanels.add(quickSort);
 
-		selectionSortThread = new SelectionSortThread(this, selectionSort,
-				delay);
+		selectionSortThread = new SelectionSortThread(this, selectionSort, delay);
 		sortThreads.add(selectionSortThread);
-		insertionSortThread = new InsertionSortThread(this, insertionSort,
-				delay);
+		insertionSortThread = new InsertionSortThread(this, insertionSort,	delay);
 		sortThreads.add(insertionSortThread);
 		mergeSortThread = new MergeSortThread(this, mergeSort, delay);
 		sortThreads.add(mergeSortThread);
@@ -170,11 +168,11 @@ public class MainWindow {
 				mergeList.add(num);
 				quickList.add(num);
 			}
-			selectionSort.setColorRange(0, selectionList.size(), Colors.ACTIVE);
-			insertionSort.setColorRange(0, insertionList.size(), Colors.ACTIVE);
-			mergeSort.setColorRange(0, mergeList.size(), Colors.ACTIVE);
-			quickSort.setColorRange(0, quickList.size(), Colors.ACTIVE);
 		}
+		selectionSort.setColorRange(0, selectionList.size(), Colors.ACTIVE);
+		insertionSort.setColorRange(0, insertionList.size(), Colors.ACTIVE);
+		mergeSort.setColorRange(0, mergeList.size(), Colors.ACTIVE);
+		quickSort.setColorRange(0, quickList.size(), Colors.ACTIVE);
 	}
 
 	/** Fills the JEditorPane with numbers 1 to 35 */
@@ -278,7 +276,6 @@ public class MainWindow {
 	private void pause() {
 		state = (state == State.STARTED || state == State.STOPPED) ? State.PAUSED
 				: State.STARTED;
-		
 		if (isPaused()) {
 			startButton.setVisible(false);
 			pauseButton.setText("Unpause");
@@ -304,6 +301,12 @@ public class MainWindow {
 			if (sortThread.isAlive())
 				sortThread.stopThread();
 		}
+		pauseButton.setVisible(false);
+		
+		startButton.setText("Start");
+		startButton
+				.setToolTipText("Start sort with numbers provided in text box.");
+		
 		sortThreads.clear();
 		sortPanels.clear();
 	}

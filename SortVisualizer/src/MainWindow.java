@@ -11,20 +11,30 @@ import javax.swing.event.ChangeListener;
 
 public class MainWindow {
 	private JFrame frame;
-	private SortPanel selectionSort, insertionSort, mergeSort, quickSort;
-	private ArrayList<Integer> selectionList, insertionList, mergeList,
-			quickList;
-	private JPanel buttonPanel;
-	private JEditorPane numbersPane;
-	private boolean started, paused, sorted;
 	private JButton startButton, pauseButton, sortedPresetButton,
 			reversedPresetButton, randomPresetButton;
 	private JLabel instructionsLabel, delayLabel;
 	private JSlider delaySlider;
+	private JPanel buttonPanel;
+	private JEditorPane numbersPane;
+
+	private ArrayList<Integer> selectionList, insertionList, mergeList,
+			quickList;
+
+	private SortPanel selectionSort, insertionSort, mergeSort, quickSort;
+	private ArrayList<SortPanel> sortPanels = new ArrayList<SortPanel>();
+
 	private SelectionSortThread selectionSortThread;
 	private InsertionSortThread insertionSortThread;
 	private MergeSortThread mergeSortThread;
 	private QuickSortThread quickSortThread;
+	private ArrayList<SortThread> sortThreads = new ArrayList<SortThread>();
+
+	boolean started;
+	boolean paused;
+	private boolean sorted;
+
+	private State state = State.STOPPED;
 	private int delay;
 
 	public MainWindow() {
@@ -35,25 +45,6 @@ public class MainWindow {
 		frame = new JFrame("Sorting Algorithms Visualizer");
 		frame.setLayout(new GridLayout(3, 2, 10, 10));
 		frame.setLocation(5, 5);
-
-		selectionList = new ArrayList<Integer>();
-		insertionList = new ArrayList<Integer>();
-		mergeList = new ArrayList<Integer>();
-		quickList = new ArrayList<Integer>();
-
-		selectionSort = new SortPanel("Selection Sort");
-		selectionSort.setList(selectionList);
-		insertionSort = new SortPanel("Insertion Sort");
-		insertionSort.setList(insertionList);
-		mergeSort = new SortPanel("Merge Sort");
-		mergeSort.setList(mergeList);
-		quickSort = new SortPanel("Quick Sort");
-		quickSort.setList(quickList);
-
-		selectionSortThread = new SelectionSortThread(selectionSort, delay);
-		insertionSortThread = new InsertionSortThread(insertionSort, delay);
-		mergeSortThread = new MergeSortThread(mergeSort, delay);
-		quickSortThread = new QuickSortThread(quickSort, delay);
 
 		numbersPane = new JEditorPane();
 		ButtonListener buttonListener = new ButtonListener();
@@ -83,6 +74,7 @@ public class MainWindow {
 		delaySlider.setPaintLabels(true);
 		delaySlider.addChangeListener(new SliderListener());
 		delayLabel = new JLabel("Delay = " + delaySlider.getValue() + " ms");
+
 		buttonPanel = new JPanel();
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.PAGE_AXIS));
 		buttonPanel.setBorder(new EmptyBorder(0, 10, 10, 10));
@@ -95,6 +87,41 @@ public class MainWindow {
 		buttonPanel.add(reversedPresetButton);
 		buttonPanel.add(randomPresetButton);
 
+		
+		selectionList = new ArrayList<Integer>();
+		insertionList = new ArrayList<Integer>();
+		mergeList = new ArrayList<Integer>();
+		quickList = new ArrayList<Integer>();
+
+		selectionSort = new SortPanel("Selection Sort");
+		selectionSort.setList(selectionList);
+		sortPanels.add(selectionSort);
+
+		insertionSort = new SortPanel("Insertion Sort");
+		insertionSort.setList(insertionList);
+		sortPanels.add(insertionSort);
+
+		mergeSort = new SortPanel("Merge Sort");
+		mergeSort.setList(mergeList);
+		sortPanels.add(mergeSort);
+
+		quickSort = new SortPanel("Quick Sort");
+		quickSort.setList(quickList);
+		sortPanels.add(quickSort);
+
+		selectionSortThread = new SelectionSortThread(this, selectionSort,
+				delay);
+		sortThreads.add(selectionSortThread);
+		insertionSortThread = new InsertionSortThread(this, insertionSort,
+				delay);
+		sortThreads.add(insertionSortThread);
+		mergeSortThread = new MergeSortThread(this, mergeSort, delay);
+		sortThreads.add(mergeSortThread);
+		quickSortThread = new QuickSortThread(this, quickSort, delay);
+		sortThreads.add(quickSortThread);
+
+
+		
 		frame.setSize(800, 800);
 		frame.setResizable(false);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -104,10 +131,13 @@ public class MainWindow {
 		frame.add(quickSort);
 		frame.add(buttonPanel);
 		frame.add(numbersPane);
+	}
+
+	public void startDisplay() {
 		frame.setVisible(true);
 	}
 
-	// Sets delay between sort actions
+	/** Sets delay between sort actions */
 	private void setDelay(int delay) {
 		this.delay = delay;
 		delayLabel.setText("Delay = " + delay + " ms");
@@ -123,10 +153,9 @@ public class MainWindow {
 		if (quickSortThread.isAlive()) {
 			quickSortThread.setDelay(delay);
 		}
-
 	}
 
-	// Sets the values in the four lists to the values in the JEditorPane
+	/** Sets the values in the four lists to the values in the JEditorPane */
 	private void setValues(String nums) {
 		String[] numArray = nums.split(" ");
 		selectionList.clear();
@@ -148,9 +177,9 @@ public class MainWindow {
 		}
 	}
 
-	// Fills the JEditorPane with numbers 1 to 35
+	/** Fills the JEditorPane with numbers 1 to 35 */
 	private void fillSorted() {
-		if (checkAllSorted() || !started) {
+		if (checkAllSorted() || isPaused() || isStopped()) {
 			String s = "";
 			for (int i = 1; i <= 35; i++) {
 				s += i + " ";
@@ -160,9 +189,9 @@ public class MainWindow {
 		}
 	}
 
-	// Fills the JEditorPane with numbers 35 to 1
+	/** Fills the JEditorPane with numbers 35 to 1 */
 	private void fillReversed() {
-		if (checkAllSorted() || !started) {
+		if (checkAllSorted() || isPaused() || isStopped()) {
 			String s = "";
 			for (int i = 35; i >= 1; i--) {
 				s += i + " ";
@@ -172,9 +201,9 @@ public class MainWindow {
 		}
 	}
 
-	// Fills the JEditorPane with numbers randomly from 1 to 35
+	/** Fills the JEditorPane with numbers randomly from 1 to 35 */
 	private void fillRandomized() {
-		if (checkAllSorted() || !started) {
+		if (checkAllSorted() || isPaused() || isStopped()) {
 			String s = "";
 			for (int i = 1; i <= 35; i++) {
 				s += Math.round(Math.random() * 35 + 1) + " ";
@@ -184,7 +213,7 @@ public class MainWindow {
 		}
 	}
 
-	// Checks if there are actual numbers entered into the JEditorPane
+	/** Checks if there are actual numbers entered into the JEditorPane */
 	public boolean hasNums(String str) {
 		String[] numArray = str.split(" ");
 		for (String s : numArray) {
@@ -195,54 +224,93 @@ public class MainWindow {
 		return false;
 	}
 
-	// Checks if all four lists have given confirmation that they have been
-	// sorted
+	/**
+	 * Checks if all four lists have given confirmation that they have been
+	 * sorted
+	 */
 	public boolean checkAllSorted() {
-		sorted = (selectionSortThread.isSorted()
-				&& insertionSortThread.isSorted() && mergeSortThread.isSorted() && quickSortThread
-				.isSorted());
-		return sorted;
+		return selectionSortThread.isSorted() && insertionSortThread.isSorted()
+				&& mergeSortThread.isSorted() && quickSortThread.isSorted();
 	}
 
-	// Works as a toggle, initializing a new sort or terminating an ongoing
-	// sort.
-	private void start() {
-		if (hasNums(numbersPane.getText())) {
-			started = !started;
-			if (started) {
-				if (paused) {
-					pause();
-				}
-				pauseButton.setVisible(true);
-				setValues(numbersPane.getText());
-				if (selectionList.size() > 0) {
-					selectionSortThread = new SelectionSortThread(
-							selectionSort, delay);
-					selectionSortThread.start();
-					insertionSortThread = new InsertionSortThread(
-							insertionSort, delay);
-					insertionSortThread.start();
-					mergeSortThread = new MergeSortThread(mergeSort, delay);
-					mergeSortThread.start();
-					quickSortThread = new QuickSortThread(quickSort, delay);
-					quickSortThread.start();
-					frame.repaint();
-					startButton.setText("Stop");
-					startButton.setToolTipText("Stop sort.");
-				}
-			} else {
-				if (paused) {
-					pause();
-				}
-				pauseButton.setVisible(false);
-				startButton.setText("Start");
-				startButton
-						.setToolTipText("Start sort with numbers provided in text box.");
+	/**
+	 * Works as a toggle, initializing a new sort or terminating an ongoing
+	 * sort.
+	 */
+	void start() {
+		/*if (!hasNums(numbersPane.getText()))
+			return;
+		
+		state = (state == State.PAUSED || state == State.STOPPED) ? State.STARTED
+				: State.STOPPED;
+		if (!isStarted())
+			return;
+		
+		sortThreads.clear();
+		if (selectionList.size() > 0) {
+			selectionSortThread = new SelectionSortThread(this,
+					selectionSort, delay);
+			sortThreads.add(selectionSortThread);
+			selectionSortThread.start();
+
+			insertionSortThread = new InsertionSortThread(this,
+					insertionSort, delay);
+			sortThreads.add(insertionSortThread);
+			insertionSortThread.start();
+			
+			mergeSortThread = new MergeSortThread(this, mergeSort, delay);
+			sortThreads.add(mergeSortThread);
+			mergeSortThread.start();
+			
+			quickSortThread = new QuickSortThread(this, quickSort, delay);
+			sortThreads.add(quickSortThread);
+			quickSortThread.start();
+
+			frame.repaint();
+			startButton.setText("Stop");
+			startButton.setToolTipText("Stop sort.");
+		}*/
+
+		
+		
+		
+		
+		
+		started = !started;
+
+		if (started) {
+			if (paused) {
+				pause();
 			}
+			pauseButton.setVisible(true);
+			setValues(numbersPane.getText());
+			if (selectionList.size() > 0) {
+				selectionSortThread = new SelectionSortThread(this,
+						selectionSort, delay);
+				selectionSortThread.start();
+				insertionSortThread = new InsertionSortThread(this,
+						insertionSort, delay);
+				insertionSortThread.start();
+				mergeSortThread = new MergeSortThread(this, mergeSort, delay);
+				mergeSortThread.start();
+				quickSortThread = new QuickSortThread(this, quickSort, delay);
+				quickSortThread.start();
+				frame.repaint();
+				startButton.setText("Stop");
+				startButton.setToolTipText("Stop sort.");
+			}
+		} else {
+			if (paused) {
+				pause();
+			}
+			pauseButton.setVisible(false);
+			startButton.setText("Start");
+			startButton
+					.setToolTipText("Start sort with numbers provided in text box.");
 		}
 	}
 
-	// Works as a toggle, pausing the threads
+	/** Works as a toggle, pausing the threads*/
 	private void pause() {
 		paused = !paused;
 
@@ -256,16 +324,33 @@ public class MainWindow {
 			pauseButton.setToolTipText("Pause the current sort.");
 		}
 	}
-
-	public static void main(String[] args) {
-		MainWindow mw = new MainWindow();
+	
+	private void stop() {
+		state = (state == State.STARTED || state == State.PAUSED) ? State.STOPPED
+				: State.STARTED;
+		if (!isStopped())
+			return;
+		
+		for (SortPanel sortPanel : sortPanels) {
+			// Do something
+		}
+		
+		for (SortThread sortThread : sortThreads) {
+			if (sortThread.isAlive())
+				sortThread.stopThread();
+		}
 	}
 
-	// Interprets button events
-	class ButtonListener implements ActionListener {
+	/** Interprets button events */
+	private class ButtonListener implements ActionListener {
+		@Override
 		public void actionPerformed(ActionEvent event) {
 			if (event.getSource() == startButton) {
 				start();
+				/*if (startButton.getText().equalsIgnoreCase("Start"))
+					start();
+				else
+					stop();*/
 			} else if (event.getSource() == pauseButton) {
 				pause();
 			} else if (event.getSource() == sortedPresetButton) {
@@ -277,363 +362,40 @@ public class MainWindow {
 			}
 		}
 	}
-	// Modifies delay value based on slider location
-	class SliderListener implements ChangeListener {
+
+	/** Modifies delay value based on slider location */
+	private class SliderListener implements ChangeListener {
+		@Override
 		public void stateChanged(ChangeEvent e) {
 			JSlider source = (JSlider) e.getSource();
 			setDelay(source.getValue());
 		}
-
 	}
-	// First sort thread. Runs a selection sort algorithm.
-	class SelectionSortThread extends SortThread {
-		public SelectionSortThread(SortPanel sp, long msdelay) {
-			super(sp, msdelay);
-		}
 
-		public void run() {
-			int smallestIndex;
-			int listSize = sp.getListSize();
-
-			for (int a = 0; a < listSize && started; a++) {
-				while (paused) {
-					try {
-						Thread.sleep(10);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-				smallestIndex = a;
-				sp.setLine(sp.get(smallestIndex));
-				sp.setMessage("Searching remaining list for smallest element. Smallest found: "
-						+ sp.get(smallestIndex));
-				for (int i = a; i < listSize && started; i++) {
-					while (paused) {
-						try {
-							Thread.sleep(10);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-					sp.setColor(smallestIndex, Colors.TARGET);
-					sp.setIndex(i);
-
-					if (sp.get(i) < sp.get(smallestIndex)) {
-						sp.setColor(i, Colors.TARGET);
-						sp.setColor(smallestIndex, Colors.ACTIVE);
-						smallestIndex = i;
-						sp.setLine(sp.get(smallestIndex));
-						sp.setMessage("Searching remaining list for smallest element. Smallest found: "
-								+ sp.get(smallestIndex) + ".");
-					}
-					sp.repaint();
-					try {
-						Thread.sleep(msdelay);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-				sp.swap(a, smallestIndex);
-				sp.setColor(a, Colors.SORTED);
-
-				if (a == listSize - 1) {
-					sorted = true;
-					sp.setLine(0);
-					sp.setMessage("Sorted!");
-				} else {
-					sp.setColorRange(a + 1, Colors.ACTIVE);
-				}
-				sp.repaint();
-
-			}
-			sp.repaint();
-			if (checkAllSorted() && started) {
-				MainWindow.this.start();
-			}
-		}
+	public enum State {
+		STARTED, PAUSED, STOPPED;
 	}
-	// Second sort thread. Runs an insertion sort algorithm.
-	class InsertionSortThread extends SortThread {
-		public InsertionSortThread(SortPanel sp, long msdelay) {
-			super(sp, msdelay);
-		}
-		public void run() {
-			int listSize = sp.getListSize();
-			for (int i = 0; i < listSize && started; i++) {
-				sp.setIndex(i);
-				sp.setColorRange(0, i, Colors.ACTIVE);
-				sp.setColor(i, Colors.TARGET);
-				int val = sp.get(i);
-				sp.setLine(val);
-				sp.setMessage("Finding location where previous numbers < "
-						+ val + " < following numbers.");
-				for (int j = i - 1; j >= 0 && val < sp.get(j); j--) {
-					while (paused) {
-						try {
-							Thread.sleep(10);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-					sp.swap(j, j + 1);
-					sp.repaint();
-					try {
-						Thread.sleep(msdelay);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-
-				}
-				sp.repaint();
-				if (i == listSize - 1 && started) {
-					sorted = true;
-					sp.setColorRange(0, Colors.SORTED);
-					sp.setLine(0);
-					sp.setMessage("Sorted!");
-					sp.repaint();
-				}
-				try {
-					Thread.sleep(msdelay);
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
-
-			if (checkAllSorted() && started) {
-				MainWindow.this.start();
-			}
-		}
+	
+	public boolean isStarted() {
+		return state == State.STARTED;
 	}
-	// Third sort thread. Runs a merge sort algorithm.
-	class MergeSortThread extends SortThread {
-
-		public MergeSortThread(SortPanel sp, long msdelay) {
-			super(sp, msdelay);
-			sp.setIndex(-1);
-		}
-		// Division and joining
-		public void mergeSort(ArrayList<Integer> nums, int a, int b) {
-			if (started) {
-				while (paused) {
-					try {
-						Thread.sleep(10);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-				sp.setColorRange(0, Colors.INACTIVE);
-
-				if (b > a + 1) {
-					sp.setColorRange(a, (a + b) / 2, Colors.LOWER);
-					sp.setColorRange((a + b) / 2, b, Colors.UPPER);
-					sp.repaint();
-					sp.setMessage("Dividing list from index " + a + " to "
-							+ (b - 1) + " in half.");
-					try {
-						Thread.sleep(msdelay);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-					mergeSort(nums, a, (a + b) / 2);
-					mergeSort(nums, (a + b) / 2, b);
-					merge(nums, a, (a + b) / 2, b);
-				}
-			}
-		}
-		// Merging
-		public void merge(ArrayList<Integer> nums, int a, int mid, int b) {
-			if (started) {
-				int[] lower = new int[mid - a];
-				int[] upper = new int[b - mid];
-				sp.setColorRange(0, Colors.INACTIVE);
-				sp.setColorRange(a, mid, Colors.LOWER);
-				sp.setColorRange(mid, b, Colors.UPPER);
-				sp.repaint();
-				sp.setMessage("Merging values from index " + a + " to "
-						+ (b - 1) + " in order.");
-				try {
-					Thread.sleep(msdelay);
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-				int index = a;
-				int i;
-				int j;
-				for (i = 0; index < mid; i++, index++) {
-					lower[i] = nums.get(index);
-				}
-				for (j = 0; index < b; j++, index++) {
-					upper[j] = nums.get(index);
-				}
-				i = 0;
-				j = 0;
-				index = a;
-				while (i < lower.length && j < upper.length) {
-					while (paused) {
-						try {
-							Thread.sleep(10);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-					if (lower[i] < upper[j]) {
-						nums.set(index, lower[i]);
-						sp.setLine(lower[i]);
-						i++;
-						sp.setColor(index, Colors.LOWER);
-					} else {
-						nums.set(index, upper[j]);
-						sp.setLine(upper[j]);
-						j++;
-						sp.setColor(index, Colors.UPPER);
-					}
-					index++;
-					sp.repaint();
-					try {
-						Thread.sleep(msdelay);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-				while (i < lower.length) {
-					while (paused) {
-						try {
-							Thread.sleep(10);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-					nums.set(index, lower[i]);
-					sp.setLine(lower[i]);
-					sp.setColor(index, Colors.LOWER);
-					i++;
-					index++;
-					sp.repaint();
-					try {
-						Thread.sleep(msdelay);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-				while (j < upper.length) {
-					while (paused) {
-						try {
-							Thread.sleep(10);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-					nums.set(index, upper[j]);
-					sp.setLine(upper[j]);
-					sp.setColor(index, Colors.UPPER);
-					j++;
-					index++;
-					sp.repaint();
-					try {
-						Thread.sleep(msdelay);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-			}
-		}
-
-		public void run() {
-			mergeSort(list, 0, list.size());
-			if (started) {
-				sorted = true;
-				sp.setLine(0);
-				sp.setMessage("Sorted!");
-				sp.setColorRange(0, Colors.SORTED);
-				sp.repaint();
-			}
-
-			if (checkAllSorted() && started) {
-				MainWindow.this.start();
-			}
-		}
-
+	
+	public boolean isPaused() {
+		return state == State.PAUSED;
 	}
-	// Fourth sort thread. Runs a quick sort algorithm with the rightmost element as pivot.
-	class QuickSortThread extends SortThread {
-
-		public QuickSortThread(SortPanel sp, long msdelay) {
-			super(sp, msdelay);
-			sp.setIndex(-1);
-		}
-		public int partition(ArrayList<Integer> nums, int a, int b) {
-			if (started) {
-				int pivot = nums.get(b);
-				sp.setLine(pivot);
-
-				sp.setColorRange(a, b, Colors.ACTIVE);
-				sp.setColor(b, Colors.TARGET);
-				int greater = a;
-				sp.setMessage("Moving elements before/after index " + greater
-						+ " if they are < or > " + pivot + ".");
-				for (int i = a; i < b && started; i++) {
-					sp.setIndex(i);
-					while (paused) {
-						try {
-							Thread.sleep(10);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-					if (nums.get(i) < pivot) {
-						sp.setColor(i, Colors.LOWER);
-						sp.swap(i, greater);
-						greater++;
-						sp.setMessage("Moving elements before/after index "
-								+ greater + " if they are < or > " + pivot
-								+ ".");
-					} else {
-						sp.setColor(i, Colors.UPPER);
-					}
-					sp.repaint();
-					try {
-						Thread.sleep(msdelay);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-				sp.swap(greater, b);
-				sp.repaint();
-				try {
-					Thread.sleep(msdelay);
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-
-				return greater;
-			}
-			return -1;
-		}
-
-		public void quickSort(ArrayList<Integer> nums, int a, int b) {
-			sp.setColorRange(0, Colors.INACTIVE);
-			sp.repaint();
-			if (a < b + 1 && started) {
-				int pivot = partition(nums, a, b);
-				quickSort(nums, a, pivot - 1);
-				quickSort(nums, pivot + 1, b);
-			}
-		}
-
-		public void run() {
-			quickSort(list, 0, list.size() - 1);
-			if (started) {
-				sorted = true;
-				sp.setLine(0);
-				sp.setMessage("Sorted!");
-				sp.setColorRange(0, Colors.SORTED);
-				sp.setIndex(-1);
-				sp.repaint();
-			}
-
-			if (checkAllSorted() && started) {
-				MainWindow.this.start();
-			}
-		}
+	
+	public boolean isStopped() {
+		return state == State.STOPPED;
 	}
+	
+	public static void main(String[] args) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				MainWindow mw = new MainWindow();
+				mw.startDisplay();
+			}
+		});
+	}
+
 }

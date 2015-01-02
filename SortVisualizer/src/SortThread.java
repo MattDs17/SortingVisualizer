@@ -1,4 +1,7 @@
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+
+import javax.swing.SwingUtilities;
 
 public abstract class SortThread extends Thread {
 
@@ -14,12 +17,41 @@ public abstract class SortThread extends Thread {
 		sp.setIndex(0);
 		sorted = false;
 	}
-	// Used by MainWindow to update delay when changed
-	public void setDelay(int msdelay){
+
+	/** Used by MainWindow to update delay when changed */
+	public void setDelay(int msdelay) {
 		this.msdelay = msdelay;
 	}
-	// Returns whether or not the list has finished being sorted
-	public boolean isSorted(){
+
+	/** Returns whether or not the list has finished being sorted */
+	public boolean isSorted() {
 		return sorted;
-	}	
+	}
+	
+	protected void stopThread() {
+		currentThread().interrupt();
+	}
+	
+	protected void sleepThread(long msdelay) {
+		try {
+			Thread.sleep(msdelay);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	protected void repaint() {
+		try {
+			SwingUtilities.invokeAndWait(new Runnable() {
+				@Override
+				public void run() {
+					sp.repaint();
+				}
+			});
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 }

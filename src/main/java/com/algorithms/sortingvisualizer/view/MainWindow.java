@@ -23,14 +23,14 @@ public class MainWindow {
 	private ArrayList<Integer> selectionList, insertionList, mergeList,
 			quickList;
 
-	private SortPanel selectionSort, insertionSort, mergeSort, quickSort;
-	private ArrayList<SortPanel> sortPanels = new ArrayList<SortPanel>();
+	private SortPanel selectionSortPanel, insertionSortPanel, mergeSortPanel, quickSortPanel;
+	private ArrayList<SortPanel> sortPanels = new ArrayList<>();
 
 	private SelectionSortThread selectionSortThread;
 	private InsertionSortThread insertionSortThread;
 	private MergeSortThread mergeSortThread;
 	private QuickSortThread quickSortThread;
-	private ArrayList<SortThread> sortThreads = new ArrayList<SortThread>();
+	private ArrayList<SortThread> sortThreads = new ArrayList<>();
 
 	private State state = State.STOPPED;
 	private int delay;
@@ -84,45 +84,44 @@ public class MainWindow {
 		buttonPanel.add(randomPresetButton);
 
 		
-		selectionList = new ArrayList<Integer>();
-		insertionList = new ArrayList<Integer>();
-		mergeList = new ArrayList<Integer>();
-		quickList = new ArrayList<Integer>();
+		selectionList = new ArrayList<>();
+		insertionList = new ArrayList<>();
+		mergeList = new ArrayList<>();
+		quickList = new ArrayList<>();
 
-		selectionSort = new SortPanel("Selection Sort");
-		selectionSort.setList(selectionList);
-		sortPanels.add(selectionSort);
+		selectionSortPanel = new SortPanel("Selection Sort");
+		selectionSortPanel.setList(selectionList);
+		sortPanels.add(selectionSortPanel);
 
-		insertionSort = new SortPanel("Insertion Sort");
-		insertionSort.setList(insertionList);
-		sortPanels.add(insertionSort);
+		insertionSortPanel = new SortPanel("Insertion Sort");
+		insertionSortPanel.setList(insertionList);
+		sortPanels.add(insertionSortPanel);
 
-		mergeSort = new SortPanel("Merge Sort");
-		mergeSort.setList(mergeList);
-		sortPanels.add(mergeSort);
+		mergeSortPanel = new SortPanel("Merge Sort");
+		mergeSortPanel.setList(mergeList);
+		sortPanels.add(mergeSortPanel);
 
-		quickSort = new SortPanel("Quick Sort");
-		quickSort.setList(quickList);
-		sortPanels.add(quickSort);
+		quickSortPanel = new SortPanel("Quick Sort");
+		quickSortPanel.setList(quickList);
+		sortPanels.add(quickSortPanel);
 
-		selectionSortThread = new SelectionSortThread(this, selectionSort, delay);
+		selectionSortThread = new SelectionSortThread(this, selectionSortPanel, delay);
 		sortThreads.add(selectionSortThread);
-		insertionSortThread = new InsertionSortThread(this, insertionSort,	delay);
+		insertionSortThread = new InsertionSortThread(this, insertionSortPanel,	delay);
 		sortThreads.add(insertionSortThread);
-		mergeSortThread = new MergeSortThread(this, mergeSort, delay);
+		mergeSortThread = new MergeSortThread(this, mergeSortPanel, delay);
 		sortThreads.add(mergeSortThread);
-		quickSortThread = new QuickSortThread(this, quickSort, delay);
+		quickSortThread = new QuickSortThread(this, quickSortPanel, delay);
 		sortThreads.add(quickSortThread);
 
 
-		
 		frame.setSize(800, 800);
 		frame.setResizable(false);
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		frame.add(selectionSort);
-		frame.add(insertionSort);
-		frame.add(mergeSort);
-		frame.add(quickSort);
+		frame.add(selectionSortPanel);
+		frame.add(insertionSortPanel);
+		frame.add(mergeSortPanel);
+		frame.add(quickSortPanel);
 		frame.add(buttonPanel);
 		frame.add(numbersPane);
 	}
@@ -135,40 +134,11 @@ public class MainWindow {
 	private void setDelay(int delay) {
 		this.delay = delay;
 		delayLabel.setText("Delay = " + delay + " ms");
-		if (selectionSortThread.isAlive()) {
-			selectionSortThread.setDelay(delay);
-		}
-		if (insertionSortThread.isAlive()) {
-			insertionSortThread.setDelay(delay);
-		}
-		if (mergeSortThread.isAlive()) {
-			mergeSortThread.setDelay(delay);
-		}
-		if (quickSortThread.isAlive()) {
-			quickSortThread.setDelay(delay);
-		}
-	}
-
-	/** Sets the values in the four lists to the values in the JEditorPane */
-	private void setValues(String nums) {
-		String[] numArray = nums.split(" ");
-		selectionList.clear();
-		insertionList.clear();
-		mergeList.clear();
-		quickList.clear();
-		for (String s : numArray) {
-			if (s.matches("^[0-9]*$") && s.length() > 0) {
-				int num = Integer.parseInt(s);
-				selectionList.add(num);
-				insertionList.add(num);
-				mergeList.add(num);
-				quickList.add(num);
-			}
-		}
-		selectionSort.setColorRange(0, selectionList.size(), Colors.ACTIVE);
-		insertionSort.setColorRange(0, insertionList.size(), Colors.ACTIVE);
-		mergeSort.setColorRange(0, mergeList.size(), Colors.ACTIVE);
-		quickSort.setColorRange(0, quickList.size(), Colors.ACTIVE);
+		for (SortThread sortThread : sortThreads) {
+            if (sortThread.isAlive()) {
+                sortThread.setDelay(delay);
+            }
+        }
 	}
 
 	/** Fills the JEditorPane with numbers 1 to 35 */
@@ -179,7 +149,6 @@ public class MainWindow {
 				s += i + " ";
 			}
 			numbersPane.setText(s);
-			setValues(s);
 		}
 	}
 
@@ -191,7 +160,6 @@ public class MainWindow {
 				s += i + " ";
 			}
 			numbersPane.setText(s);
-			setValues(s);
 		}
 	}
 
@@ -203,7 +171,6 @@ public class MainWindow {
 				s += Math.round(Math.random() * 35 + 1) + " ";
 			}
 			numbersPane.setText(s);
-			setValues(s);
 		}
 	}
 
@@ -242,33 +209,53 @@ public class MainWindow {
 		
 		sortThreads.clear();
 		pauseButton.setVisible(true);
-		setValues(numbersPane.getText());
-		if (selectionList.size() > 0) {
+
+        ArrayList<Integer> listOfNumbers = getListOfNumbersFromPane(numbersPane.getText());
+        for (SortPanel sortPanel : sortPanels) {
+            sortPanel.assignNewListToSort(listOfNumbers);
+            sortPanel.setNewColors();
+        }
+
+		if (listOfNumbers.size() > 0) {
 			selectionSortThread = new SelectionSortThread(this,
-					selectionSort, delay);
+                    selectionSortPanel, delay);
 			sortThreads.add(selectionSortThread);
-			selectionSortThread.start();
 
 			insertionSortThread = new InsertionSortThread(this,
-					insertionSort, delay);
+                    insertionSortPanel, delay);
 			sortThreads.add(insertionSortThread);
-			insertionSortThread.start();
-			
-			mergeSortThread = new MergeSortThread(this, mergeSort, delay);
+
+			mergeSortThread = new MergeSortThread(this, mergeSortPanel, delay);
 			sortThreads.add(mergeSortThread);
-			mergeSortThread.start();
-			
-			quickSortThread = new QuickSortThread(this, quickSort, delay);
+
+			quickSortThread = new QuickSortThread(this, quickSortPanel, delay);
 			sortThreads.add(quickSortThread);
-			quickSortThread.start();
 
 			startButton.setText("Stop");
 			startButton.setToolTipText("Stop sort.");
 			frame.repaint();
+
+            // Start all the Sort Threads viz. Selection, Insertion, Merge and Quick sort threads.
+            for (SortThread sortThread : sortThreads) {
+                sortThread.start();
+            }
 		}
 	}
 
-	/** Works as a toggle, pausing the threads*/
+    private ArrayList<Integer> getListOfNumbersFromPane(String nums) {
+        String[] numArray = nums.split(" ");
+        ArrayList<Integer> numbersToSort = new ArrayList<>(numArray.length);
+
+        for (String numberString: numArray) {
+            if (numberString.matches("^[0-9]*$") && numberString.length() > 0) {
+                numbersToSort.add(Integer.parseInt(numberString));
+            }
+        }
+
+        return numbersToSort;
+    }
+
+    /** Works as a toggle, pausing the threads*/
 	private void pause() {
 		state = (state == State.STARTED || state == State.STOPPED) ? State.PAUSED
 				: State.STARTED;
@@ -290,12 +277,13 @@ public class MainWindow {
 			return;
 		
 		for (SortPanel sortPanel : sortPanels) {
-			// Do something
+			sortPanel.clearTheListOfNumbersToSort();
 		}
 		
 		for (SortThread sortThread : sortThreads) {
-			if (sortThread.isAlive())
-				sortThread.stopThread();
+			if (sortThread.isAlive()) {
+                sortThread.stopThread();
+            }
 		}
 		pauseButton.setVisible(false);
 		
@@ -304,7 +292,6 @@ public class MainWindow {
 				.setToolTipText("Start sort with numbers provided in text box.");
 		
 		sortThreads.clear();
-		sortPanels.clear();
 	}
 
 	/** Interprets button events */

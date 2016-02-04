@@ -1,10 +1,8 @@
 package com.algorithms.sortingvisualizer.view;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Graphics;
+import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
-import javax.swing.JPanel;
 
 public class SortPanel extends JPanel {
 	private ArrayList<Integer> list;
@@ -20,8 +18,8 @@ public class SortPanel extends JPanel {
 
 	public SortPanel(String name) {
 		super();
-		list = new ArrayList<Integer>();
-		colorList = new ArrayList<Colors>();
+		list = new ArrayList<>();
+		colorList = new ArrayList<>();
 		this.name = name;
 		message = "";
 		index = 0;
@@ -128,4 +126,17 @@ public class SortPanel extends JPanel {
 		}
 
 	}
+
+    public void assignNewListToSort(ArrayList<Integer> listOfNumbers) {
+        list.clear();
+        list.addAll(listOfNumbers);
+    }
+
+    public void setNewColors() {
+        setColorRange(0, list.size(), Colors.ACTIVE);
+    }
+
+    public void clearTheListOfNumbersToSort() {
+        list.clear();
+    }
 }

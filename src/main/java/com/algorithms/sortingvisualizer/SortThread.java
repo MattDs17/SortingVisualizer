@@ -57,4 +57,14 @@ public abstract class SortThread extends Thread {
 			e.printStackTrace();
 		}
 	}
+
+	public void addNumberToList(int[] numbersToSort) {
+		for (int i : numbersToSort) {
+			list.add(i);
+		}
+	}
+
+    public void clearList() {
+        list.clear();
+    }
 }

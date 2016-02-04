@@ -83,7 +83,6 @@ public class MainWindow {
 		buttonPanel.add(reversedPresetButton);
 		buttonPanel.add(randomPresetButton);
 
-		
 		selectionList = new ArrayList<>();
 		insertionList = new ArrayList<>();
 		mergeList = new ArrayList<>();

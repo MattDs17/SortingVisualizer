@@ -58,13 +58,4 @@ public abstract class SortThread extends Thread {
 		}
 	}
 
-	public void addNumberToList(int[] numbersToSort) {
-		for (int i : numbersToSort) {
-			list.add(i);
-		}
-	}
-
-    public void clearList() {
-        list.clear();
-    }
 }

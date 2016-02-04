@@ -1,3 +1,4 @@
+package com.algorithms.sortingvisualizer;
 
 /** Runs an insertion sort algorithm. */
 public class InsertionSortThread extends SortThread {

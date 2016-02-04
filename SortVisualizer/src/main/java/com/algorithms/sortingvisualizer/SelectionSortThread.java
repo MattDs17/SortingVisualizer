@@ -1,3 +1,4 @@
+package com.algorithms.sortingvisualizer;
 
 /** Runs a selection sort algorithm. */
 public class SelectionSortThread extends SortThread {

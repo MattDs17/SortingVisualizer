@@ -1,5 +1,9 @@
 package com.algorithms.sortingvisualizer;
 
+import com.algorithms.sortingvisualizer.view.Colors;
+import com.algorithms.sortingvisualizer.view.MainWindow;
+import com.algorithms.sortingvisualizer.view.SortPanel;
+
 /** Runs an insertion sort algorithm. */
 public class InsertionSortThread extends SortThread {
 

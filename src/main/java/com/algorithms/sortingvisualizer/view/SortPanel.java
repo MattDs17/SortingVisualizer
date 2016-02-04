@@ -1,4 +1,4 @@
-package com.algorithms.sortingvisualizer;
+package com.algorithms.sortingvisualizer.view;
 
 import java.awt.Color;
 import java.awt.Graphics2D;

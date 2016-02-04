@@ -1,5 +1,9 @@
 package com.algorithms.sortingvisualizer;
 
+import com.algorithms.sortingvisualizer.view.Colors;
+import com.algorithms.sortingvisualizer.view.MainWindow;
+import com.algorithms.sortingvisualizer.view.SortPanel;
+
 /** Runs a selection sort algorithm. */
 public class SelectionSortThread extends SortThread {
 

@@ -1,4 +1,6 @@
-package com.algorithms.sortingvisualizer;
+package com.algorithms.sortingvisualizer.view;
+
+import com.algorithms.sortingvisualizer.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -281,7 +283,7 @@ public class MainWindow {
 		}
 	}
 	
-	protected void stop() {
+	public void stop() {
 		state = (state == State.STARTED || state == State.PAUSED) ? State.STOPPED
 				: State.STARTED;
 		if (!isStopped())
@@ -349,16 +351,6 @@ public class MainWindow {
 	
 	public boolean isStopped() {
 		return state == State.STOPPED;
-	}
-	
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				MainWindow mw = new MainWindow();
-				mw.startDisplay();
-			}
-		});
 	}
 
 }
